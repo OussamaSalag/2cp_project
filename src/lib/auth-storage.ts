@@ -13,7 +13,7 @@ export interface StoredUser {
   role: string;
 }
 
-/** True only when running in a real browser (not SSR / Cloudflare Workers). */
+/** True only when running in a real browser (not SSR). */
 const isBrowser = typeof window !== "undefined" && typeof localStorage !== "undefined";
 
 // ── Token ─────────────────────────────────────────────────────────────────
