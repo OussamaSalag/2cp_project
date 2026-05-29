@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { GeometricBackground } from "@/components/ui/shape-landing-hero";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -21,7 +21,14 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const { t } = useLanguage();
-  const { refreshUser } = useAuth();
+  const { refreshUser, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      window.location.replace("/dashboard");
+    }
+  }, [isAuthenticated, authLoading]);
+
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,7 +55,8 @@ function LoginPage() {
     return true;
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const emailOk = validateEmail(email);
     const passOk = validatePassword(password);
     if (!emailOk || !passOk) return;
@@ -102,7 +110,7 @@ function LoginPage() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             {/* Email */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -157,7 +165,7 @@ function LoginPage() {
             </div>
 
             <button
-              onClick={handleLogin}
+              type="submit"
               disabled={loading || !email || !password}
               className="retro-btn w-full rounded-xl bg-primary px-8 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50 flex items-center justify-center gap-2"
             >
@@ -170,7 +178,7 @@ function LoginPage() {
                 "Sign In"
               )}
             </button>
-          </div>
+          </form>
 
           <p className="text-center text-xs text-muted-foreground">
             {t("dontHaveAccount")}{" "}

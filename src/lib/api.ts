@@ -65,7 +65,9 @@ async function request<T>(
   if (!response.ok) {
     const detail =
       typeof data === "object" && data !== null && "detail" in data
-        ? String((data as { detail: unknown }).detail)
+        ? Array.isArray((data as { detail: unknown }).detail)
+          ? ((data as { detail: any[] }).detail).map((e) => e.msg).join(", ")
+          : String((data as { detail: unknown }).detail)
         : `HTTP ${response.status}`;
     throw new ApiError(response.status, detail);
   }

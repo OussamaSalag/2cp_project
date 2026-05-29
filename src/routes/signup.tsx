@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Handshake, ArrowLeft, KeyRound, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { GeometricBackground } from "@/components/ui/shape-landing-hero";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -21,7 +21,14 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const { t } = useLanguage();
-  const { refreshUser } = useAuth();
+  const { refreshUser, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      window.location.replace("/dashboard");
+    }
+  }, [isAuthenticated, authLoading]);
+
 
   // Form state
   const [email, setEmail] = useState("");
@@ -43,8 +50,12 @@ function SignupPage() {
     return true;
   };
 
-  const handleSubmit = async () => {
-    if (!validateEmail(email)) return;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!validateEmail(email)) {
+      toast.error(t("emailDomainError"));
+      return;
+    }
     if (fullName.trim().length < 2) {
       toast.error("Full name must be at least 2 characters");
       return;
@@ -102,7 +113,7 @@ function SignupPage() {
           <ArrowLeft className="h-4 w-4" /> {t("backToHome")}
         </Link>
 
-        <div className="retro-card rounded-2xl bg-card p-8 space-y-5">
+        <form onSubmit={handleSubmit} className="retro-card rounded-2xl bg-card p-8 space-y-5">
           <div className="flex items-center gap-3 mb-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
               <Handshake className="h-5 w-5 text-primary-foreground" />
@@ -197,7 +208,7 @@ function SignupPage() {
           </div>
 
           <button
-            onClick={handleSubmit}
+            type="submit"
             disabled={loading || !email || !fullName || !username || !password || !confirmPassword}
             className="retro-btn block w-full rounded-xl bg-primary px-8 py-3 text-center text-sm font-bold text-primary-foreground disabled:opacity-50 flex items-center justify-center gap-2"
           >
@@ -215,7 +226,7 @@ function SignupPage() {
             {t("alreadyHaveAccount")}{" "}
             <Link to="/login" className="text-primary font-semibold">{t("login")}</Link>
           </p>
-        </div>
+        </form>
       </motion.div>
     </div>
   );
